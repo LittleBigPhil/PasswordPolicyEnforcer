@@ -1,53 +1,5 @@
 <?php
 
-//Allows stateful editing of the HTML
-//Automatically echos on destruction
-//Example use :
-//
-//$html = new HTMLDocument;
-//$html->setTitle("title example");
-//$html->addBodyHTML("<p>paragraph example</p><br />");
-//unset($html);
-//
-//the unset shouldn't be necessary
-class HTMLDocument {
-    private $bodyMarkup = array();
-    private $title = "";
-
-    public function addBodyHTML($tags) {
-        $this->bodyMarkup[] = $tags;
-    }
-    public function setTitle($title) {
-        $this->title = $title;
-    }
-
-    public function __destruct() {
-        echo
-        '<!DOCTYPE html>
-        <html lang="en">
-            <head>
-                <meta charset="utf-8" />
-                <title>'
-
-        . $this->title
-
-        . '</title>
-            </head>
-            <body>
-            <caption><h1 style="text-align:center">'
-        . $this->title
-        . '</h1></caption>';
-        
-        foreach ($this->bodyMarkup as $bodyString) {
-            echo $bodyString;
-        }
-
-        echo   '</body>
-        </html>';
-    }
-}
-
-
 //Wrapper around the default php session interface
 class Session {
     private $lifetime = 600;
@@ -262,8 +214,8 @@ class Trampoline {
             $nextFunc = $thunk->getLeft()->ifOrElse(function(){ throw new Exception; } );
             $thunk = $nextFunc();
         }
-        $resolved = $thunk->getRight()->ifOrElse(None);
-        assert($resolved !== None);
+        $resolved = $thunk->getRight()->ifOrElse(Null);
+        assert($resolved !== Null);
         return $resolved;
     }
 }
@@ -272,12 +224,31 @@ class Trampoline {
 
 class StringUtils {
     // ToDo
-    public static function DistanceBetween(string $str1, string $str2) {
+    public static function distanceBetween(string $str1, string $str2) {
         throw new \Exception("Not Implemented");
     }
 }
 
 
+class PolicyOptions {
+    // ToDO
+    public static function loadFromFile($filePath) {
+        throw new \Exception("Not Implemented");
+    }
+    // ToDo
+    public function saveToFile($filePath) {
+        throw new \Exception("Not Implemented");
+    }
+    // ToDo
+    public static function loadFromPost($session) {
+        throw new \Exception("Not Implemented");
+    }
+
+    private $mapping;
+    private __construct($mapping) {
+        $this->mapping = $mapping;
+    }
+}
 
 
 
