@@ -10,4 +10,5 @@ require_password_length = true
 password_minimum_length = 12
 require_passphrase_length = true
 passphrase_minimum_length = 24
-
+password_expiry_enabled = true
+password_expiry_delay = 2678400

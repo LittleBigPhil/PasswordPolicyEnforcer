@@ -177,6 +177,15 @@ class Component {
 
         return $comp;
     }
+    public static function landingComponent($html) {
+        $comp = new Component;
+
+        $comp->getInfo = InfoGetter::emptyGetter();
+        $comp->presenter = Presenter::htmlTitledPresenter($html, Presenter::landingFormPresenter(), "Landing");
+        $comp->components = [];
+
+        return $comp;
+    }
 }
 
 
@@ -202,7 +211,18 @@ class Presenter {
             return '<form action="index.php" method="post">
             User Name: <input type="text" name="username"><br>
             Password: <input type="password" name="pass"><br>
-            <input type="submit" name="rootEvent" value="loginSubmit">
+            <button type="submit" name="rootEvent" value="loginSubmit">Submit</button>
+            </form>';
+        };
+    }
+    public static function landingFormPresenter() {
+        // ToDo
+        // Disabled the admin options when user type isn't an admin
+        return function($info, $components) {
+            return '<form action="index.php" method="post">
+              <button type="submit" name="rootEvent" value="goToChangePassword">Change your password</option>
+              <button type="submit" name="rootEvent" value="goToAdmin">Admin Options</option>
+              <button type="submit" name="rootEvent" value="logoutSubmit">Logout</option>
             </form>';
         };
     }
