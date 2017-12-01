@@ -28,6 +28,7 @@ $qwertyKeyboard = array( //values of each keyboard row
 
 );
 
+define('ALPHABET_CAPITALIZED' , 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 define('LEETDICTIONARY', $leetDictionary);
 define('QWERTYKEYBOARD', $qwertyKeyboard);
 
@@ -68,57 +69,62 @@ function leetToNormalText($leetText){
 	
 }
 //$password should always be in SINGLE QUOTES
-function levenshteinTestSuiteVersusFile($password,$threshold,$file,$reverse,$leet){ //Returns true on a match. Threshold is a number between 0 and 1 with 0 always finding a match and 1 never finding a match, so 0 is most strict
+function levenshteinTestSuiteVersusFile($password,$threshold,$file,$reverse,$leet){ //Returns array where first value is boolean and second value is description. Threshold is a number between 0 and 1 with 0 always finding a match and 1 never finding a match, so 0 is most strict
 	
-	levenshteinVersusFile($password, $threshold, $file);//vanilla test
+	if(levenshteinVersusFile($password, $threshold, $file)){
+		return array(true,'no changes');
+	}
+	//vanilla test
 	
 	if($reverse){
 		if(levenshteinVersusFile(strrev($password), $threshold, $file)){ //reversed test
-			return true;
+			return array(true,'reverse');
 		}
 	}
 	
 	if($leet){
 		if(levenshteinVersusFile(leetToNormalText($password), $threshold, $file)){ //reversed test
-			return true;
+			return array(true,'leet');
 		}
 	}
 	
 	if($reverse && $leet){
 		if(levenshteinVersusFile(leetToNormalText(strrev($password)), $threshold, $file)){ //reversed test
-			return true;
+			return array(true,'reverse and leet');
 		}
 	}
 
 	
-	return false;
+	return array(false, 'no issues');
 
 }
 
 function levenshteinTestSuiteVersusString($password,$threshold,$string,$reverse,$leet){ //Returns true on a match. Threshold is a number between 0 and 1 with 0 always finding a match and 1 never finding a match, so 0 is most strict
 	
-	levenshteinVersusString($password, $threshold, $string);//vanilla test
+	if(levenshteinVersusString($password, $threshold, $string)){
+		return array(true,'no changes');
+	}
 	
 	if($reverse){
 		if(levenshteinVersusString(strrev($password), $threshold, $string)){ //reversed test
-			return true;
+			return array(true,'reverse');
 		}
 	}
 	
 	if($leet){
 		if(levenshteinVersusString(leetToNormalText($password), $threshold, $string)){ //reversed test
-			return true;
+			return array(true,'leet');
 		}
 	}
 	
 	if($reverse && $leet){
 		if(levenshteinVersusString(leetToNormalText(strrev($password)), $threshold, $string)){ //reversed test
-			return true;
+			return array(true,'reverse and leet');
 		}
 	}
 
 	
-	return false;
+	return array(false, 'no issues');
 
 }
 
@@ -141,5 +147,62 @@ function hasConsecutiveCharacters($patternLength, $password){ //Tests if it cont
 	
 }
 
+function containsCapitalsBesidesFirst($password){ //returns an array where the first value returns true if it contains any capitals and the second value returns true if it contains capitals beside the first
+	if (strlen($password) > 0){
+		foreach(str_split(ALPHABET_CAPITALIZED) as $letter){
+			if ($password[0] === $letter){
+				$password = ltrim($password, $letter);
+				foreach(str_split(ALPHABET_CAPITALIZED) as $letter){
+					if(strpos($password, $letter) !== false){
+						return array(true,true);
+					}
+				}
+				return array(true, false);
+			}
+		}
+		
+		foreach(str_split(ALPHABET_CAPITALIZED) as $letter){
+			if(strpos($password, $letter) !== false){
+				return array(true,true);
+			}
+		}
+	}
+		
+	return array(false,false);
+}
+
+function meetsCharacterRequirements($password, $charRequirementsArray){
+	
+	foreach($charRequirementsArray as $row){
+		$isIn = false;
+		for($i = 0; $i < strlen($row); $i++){
+			echo $row[$i] . '<div>';
+			if (strpos($password,$row[$i]) !== false){
+				$isIn = true;
+				break;
+			}
+		}
+		
+		if($isIn === false ){
+			return false;
+		}
+	}
+	
+	return true;
+	
+}
+
+/* Example $charRequirementsArray. So long as there exists one character in the password of each row, requirements are met
+
+$charRequirements = array(
+	
+	'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+	'!@#$%^&*()_+}{;?><.,'
+
+);
+
+*/
+
+	
 
 ?>
