@@ -312,8 +312,6 @@ function testWithOptions($password, $passwordHistory = array()){ //returns true 
 	return array(true, 'Password passed all tests');
 	
 }
-//echo isPassphrase('passwordpasswordpassword');
-echo testWithOptions('enu3eh4rD#2%fjrn#1#nfi%')[1];
 
 
 
