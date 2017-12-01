@@ -167,9 +167,42 @@ function containsCapitalsBesidesFirst($password){ //returns an array where the f
 			}
 		}
 	}
-	
-	
+		
 	return array(false,false);
-
 }
+
+function meetsCharacterRequirements($password, $charRequirementsArray){
+	
+	foreach($charRequirementsArray as $row){
+		$isIn = false;
+		for($i = 0; $i < strlen($row); $i++){
+			echo $row[$i] . '<div>';
+			if (strpos($password,$row[$i]) !== false){
+				$isIn = true;
+				break;
+			}
+		}
+		
+		if($isIn === false ){
+			return false;
+		}
+	}
+	
+	return true;
+	
+}
+
+/* Example $charRequirementsArray. So long as there exists one character in the password of each row, requirements are met
+
+$charRequirements = array(
+	
+	'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+	'!@#$%^&*()_+}{;?><.,'
+
+);
+
+*/
+
+	
+
 ?>
