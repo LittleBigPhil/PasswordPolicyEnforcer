@@ -1,0 +1,18 @@
+<html>
+<body>
+<form action="index.php" method="post">
+<select name="PasswordStore">
+  <option value="plain">Store passwords as plain text</option>
+  <option value="hash">Store passwords hashed</option>
+</select><br>
+Ban Dictionary words in passwords:<input type="checkbox" name="diction" value="Ban Dictionary words in passwords"><br>
+Ban Substitutions on Weak Passwords:<input type="checkbox" name="substitutions" value="Ban Substitutions on Weak Passwords"><br>
+Password Length requirement: <input type="text" name="passLength"><br>
+Passphrase Length requirement: <input type="text" name="phraseLength"><br>
+Require special characters:<input type="checkbox" name="special" value="Require special characters"><br>
+minimum password age: <input type="text" name="phraseLength"><br>
+Ban common patterns:<input type="checkbox" name="patterns" value="Ban common patterns"><br>
+<input type="submit">
+</form>
+</body>
+</html>
