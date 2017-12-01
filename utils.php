@@ -67,6 +67,7 @@ class DatabaseConnection {
 
 }
 
+
 abstract class Maybe {
     public static function build($value) {
         if ($value === NULL) {
@@ -76,16 +77,18 @@ abstract class Maybe {
         }
     }
 
+    public function flatMap($func) {
+        return $this->map($func)->flatten();
+    }
+
     abstract public function ifOrElse($else_val);
     abstract public function map($func);
     abstract public function flatten();
     abstract public function isNothing();
     abstract public function isJust();
 
-    public function flatMap($func) {
-        return map($func)->flatten();
-    }
 }
+
 
 class Just extends Maybe {
     public $value;
@@ -99,7 +102,7 @@ class Just extends Maybe {
     }
 
     public function map($func) {
-        return new Just($func($this->value));
+        return new Just(call_user_func($func, $this->value));
     }
 
     public function flatten() {
@@ -135,7 +138,7 @@ class Lazy {
     }
     
     public function get() {
-        $generated = $this->value->ifOrElse($this->generator());
+        $generated = $this->value->ifOrElse(call_user_func($this->generator));
         $this->value = new Just($generated);
         return $generated;
     }
@@ -144,10 +147,10 @@ class Lazy {
 abstract class Either {
 
     public function leftFlatMap($func) {
-        return leftMap($func)->leftFlatten();
+        return $this->leftMap($func)->leftFlatten();
     }
     public function rightFlatMap($func) {
-        return rightMap($func)->rightFlatten();
+        return $this->rightMap($func)->rightFlatten();
     }
 
     public static function tryFunc($func) {
@@ -168,6 +171,7 @@ abstract class Either {
     public abstract function getRight();
 }
 
+
 class Left extends Either{
     private $value;
     public function __construct($value) {
@@ -181,10 +185,10 @@ class Left extends Either{
         return false;
     }
     public function leftMap($func) {
-        return new Left($func($this->value));
+        return new Left(call_user_func($func, $this->value));
     }
     public function leftFlatten() {
-        return $value;
+        return $this->value;
     }
     public function rightMap($func) {
         return $this;
@@ -219,10 +223,10 @@ class Right extends Either{
         return $this;
     }
     public function rightMap($func) {
-        return new Right($func($this->value));
+        return new Right(call_user_func($func, $this->value));
     }
     public function rightFlatten() {
-        return $value;
+        return $this->value;
     }
     public function getLeft() {
         return new Nothing;
@@ -241,7 +245,7 @@ class Trampoline {
         $thunk = new Left($tFunc());
         while ($thunk->isLeft()) {
             $nextFunc = $thunk->getLeft()->ifOrElse(function(){ throw new Exception; } );
-            $thunk = $nextFunc();
+            $thunk = call_user_func($nextFunc);
         }
         $resolved = $thunk->getRight()->ifOrElse(Null);
         assert($resolved !== Null);

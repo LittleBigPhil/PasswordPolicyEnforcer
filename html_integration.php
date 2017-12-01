@@ -65,8 +65,8 @@ class Component {
 
     public function present() {
         if ($this->enabled) {
-            $info = $this->getInfo();
-            $this->presenter($info, $components);
+            $info = call_user_func($this->getInfo);
+            call_user_func($this->presenter, $info, $this->components);
         } 
     }
 
@@ -78,20 +78,20 @@ class Component {
     public static function rootComponent($html, $session, $database) {
         $comp = new Component;
 
-        $comp->getInfo = InfoGetters::emptyGetter;
-        $comp->presenter = Presenters::presentAll;
+        $comp->getInfo = InfoGetter::emptyGetter();
+        $comp->presenter = Presenter::presentAll();
 
         // ToDo
         // Add the pages with actual components
         $comp->components = [
-            "loginPage" => Presenter::htmlTitledPresenter($html, Presenter::loginFormPresenter, "Login"),
-            "landingPage" => fillerComponent(),
-            "adminPage" => fillerComponent(),
-            "changePasswordPage" => fillerComponent()
+            "loginPage" => self::loginComponent($html),
+            "landingPage" => self::fillerComponent(),
+            "adminPage" => self::fillerComponent(),
+            "changePasswordPage" => self::fillerComponent()
         ];
 
         $enablePage = function ($name) use ($comp) {
-            array_map($comp->components, function ($innerComp) { $innerComp->enabled = false; });
+            array_map(function ($innerComp) { $innerComp->enabled = false; }, $comp->components);
             $comp->components[$name]->enabled = true;
         };
 
@@ -112,38 +112,38 @@ class Component {
                     if ($passwordExpire) {
                         $session->setVar("userName", true);
                     }
-                    $enablePage("landingPage");
+                    call_user_func($enablePage, "landingPage");
                 } else {
-                    $enablePage("loginPage");
+                    call_user_func($enablePage,"loginPage");
                 }
             },
             "logoutSubmit" => function () use ($session) {
                 $session->resetAll();
             },
             "goToChangePassword" => function () use ($session, $enablePage) {
-                $enablePage("changePasswordPage");
+                call_user_func($enablePage,"changePasswordPage");
             },
             "goToAdmin" => function () use ($session, $enablePage) {
                 $maybeAdmin = $session->getVar("isAdmin");
 
                 $maybeAdmin->map(function ($isAdmin) use ($enablePage) {
-                    $enablePage("adminPage");                    
+                    call_user_func($enablePage,"adminPage");                    
                 });
             },
             "changePassword" => function () use ($session, $enablePage) {
                 // ToDo
                 // check if previous password was correct and concordant
                 // update if so
-                $enablePage("landingPage");
+                call_user_func($enablePage,"landingPage");
             },
             "updateAdminOptions" => function () use ($session, $enablePage) {
                 // ToDo
                 // Check if admin
                 // update ini accordingly
-                $enablePage("landingPage");
+                call_user_func($enablePage,"landingPage");
             },
             "goToLanding" => function () use ($session, $enablePage) {
-                $enablePage("landingPage");
+                call_user_func($enablePage,"landingPage");
             }
         ];
 
@@ -151,20 +151,18 @@ class Component {
         $maybeRootEvent = $maybeRootEvent->map(function ($rootEvent) use ($eventHandlers) {
             return $eventHandlers[$rootEvent];
         });
-        $componentEnabler = $maybeRootEvent->ifOrElse(eventHandlers["goToLanding"]);
-        $componentEnabler();
+        $componentEnabler = $maybeRootEvent->ifOrElse($eventHandlers["goToLanding"]);
+        call_user_func($componentEnabler);
 
         //these have higher precedence, and relies on some of above, so it goes last
         $maybeLoggedIn = $session->getVar("isLoggedOn");
-        if ($maybeLoggedIn.isNothing()) {
-            array_map($comp->components, function ($comp) { $comp->enable = false; });
-            $comp->components["loginPage"]->enabled = true;
+        if ($maybeLoggedIn->isNothing()) {
+            call_user_func($enablePage, "loginPage");
         }
 
         $maybeExpired = $session->getVar("passwordExpired");
         $maybeExpired->map(function ($passwordExpired) use ($comp) {
-            array_map($comp->components, function ($comp) { $comp->enable = false; });
-            $comp->components["changePasswordPage"]->enabled = true;
+            call_user_func($enablePage, "changePasswordPage");
         });
 
 
@@ -173,40 +171,48 @@ class Component {
     public static function loginComponent($html) {
         $comp = new Component;
 
-        $comp->getInfo = InfoGetters::emptyGetter;
-        $comp->presenter = Presenters::htmlPresenter($html, Presenters::loginFormPresenter);
+        $comp->getInfo = InfoGetter::emptyGetter();
+        $comp->presenter = Presenter::htmlTitledPresenter($html, Presenter::loginFormPresenter(), "Login");
         $comp->components = [];
+
+        return $comp;
     }
 }
 
 
-class Presenters {
-    public static function presentAll($info, $components) {
-        array_map($components, function ($comp) { $comp->present(); });
+class Presenter {
+    public static function presentAll() {
+        return function($info, $components) {
+            array_map(function ($comp) { $comp->present(); }, $components);
+        };
     }
     public static function htmlPresenter($html, $getTags) {
         return function ($info, $components) use ($html, $getTags) {
-            $html->addBodyHTML($getTags($info, $components));      
+            $html->addBodyHTML(call_user_func($getTags, $info, $components));      
         };
     }
     public static function htmlTitledPresenter($html, $getTags, $title) {
         return function ($info, $components) use ($html, $getTags, $title) {
             $html->setTitle($title);
-            $html->addBodyHTML($getTags($info, $components));
+            $html->addBodyHTML(call_user_func($getTags, $info, $components));
         };
     }
-    public static function loginFormPresenter($info, $components) {
-        return '<form action="index.php" method="post">
-        User Name: <input type="text" name="username"><br>
-        Password: <input type="password" name="pass"><br>
-        <input type="submit" name="rootEvent" value="loginSubmit">
-        </form>';
+    public static function loginFormPresenter() {
+        return function($info, $components) {
+            return '<form action="index.php" method="post">
+            User Name: <input type="text" name="username"><br>
+            Password: <input type="password" name="pass"><br>
+            <input type="submit" name="rootEvent" value="loginSubmit">
+            </form>';
+        };
     }
 }
 
 
-class InfoGetters {
-    public static function emptyGetter() { return null; }
+class InfoGetter {
+    public static function emptyGetter() { 
+        return function() {return null;}; 
+    }
 }
 
 
