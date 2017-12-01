@@ -24,6 +24,7 @@ $qwertyKeyboard = array( //values of each keyboard row
 	'asdfRow' => array('a','s','d','f','g','h','j','k','l'),
 	'zxcvRow' => array('z','x','c','v','b','n','m'),
 	'numberRow' => array('1','2','3','4','5','6','7','8','9'),
+	'symbolRow' => array('!','@','#','$','%','^','&','*','(',')','_','+')
 
 
 );
@@ -147,11 +148,39 @@ function containsConsecutiveCharacters($patternLength, $password){ //Tests if it
 	}
 	
 	foreach(QWERTYKEYBOARD as $row){
-		$row = array_reverse($row);
+		$row = array_reverse($row); //reversed check
 		for($i = 0; $i < sizeof($row); $i++){
 			$pattern = "";
 			for($j = 0; $j < sizeof($row)- $i; $j++){
 				$pattern .= $row[$i+$j];
+				if( strlen($pattern) >= $patternLength && strpos($password, $pattern) !== false){
+					return true;
+				}
+
+			}
+
+		}
+	}
+	
+	foreach(QWERTYKEYBOARD as $row){ //repeated characters check
+		for($i = 0; $i < sizeof($row); $i++){
+			$pattern = "";
+			for($j = 0; $j < 10; $j++){
+				$pattern .= $row[$i];
+				if( strlen($pattern) >= $patternLength && strpos($password, $pattern) !== false){
+					return true;
+				}
+
+			}
+
+		}
+	}
+	
+	foreach(str_split(SPECIAL_CHARACTERS) as $row){ //repeated characters check
+		for($i = 0; $i < sizeof($row); $i++){
+			$pattern = "";
+			for($j = 0; $j < 10; $j++){
+				$pattern .= $row[$i];
 				if( strlen($pattern) >= $patternLength && strpos($password, $pattern) !== false){
 					return true;
 				}
@@ -312,7 +341,5 @@ function testWithOptions($password, $passwordHistory = array()){ //returns true 
 	return array(true, 'Password passed all tests');
 	
 }
-
-
 
 ?>
