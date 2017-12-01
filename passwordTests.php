@@ -28,6 +28,7 @@ $qwertyKeyboard = array( //values of each keyboard row
 
 );
 
+define('ALPHABET_CAPITALIZED' , 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 define('LEETDICTIONARY', $leetDictionary);
 define('QWERTYKEYBOARD', $qwertyKeyboard);
 
@@ -146,4 +147,29 @@ function hasConsecutiveCharacters($patternLength, $password){ //Tests if it cont
 	
 }
 
+function containsCapitalsBesidesFirst($password){ //returns an array where the first value returns true if it contains any capitals and the second value returns true if it contains capitals beside the first
+	if (strlen($password) > 0){
+		foreach(str_split(ALPHABET_CAPITALIZED) as $letter){
+			if ($password[0] === $letter){
+				$password = ltrim($password, $letter);
+				foreach(str_split(ALPHABET_CAPITALIZED) as $letter){
+					if(strpos($password, $letter) !== false){
+						return array(true,true);
+					}
+				}
+				return array(true, false);
+			}
+		}
+		
+		foreach(str_split(ALPHABET_CAPITALIZED) as $letter){
+			if(strpos($password, $letter) !== false){
+				return array(true,true);
+			}
+		}
+	}
+	
+	
+	return array(false,false);
+
+}
 ?>
