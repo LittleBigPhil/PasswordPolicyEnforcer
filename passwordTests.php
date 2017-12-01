@@ -68,57 +68,62 @@ function leetToNormalText($leetText){
 	
 }
 //$password should always be in SINGLE QUOTES
-function levenshteinTestSuiteVersusFile($password,$threshold,$file,$reverse,$leet){ //Returns true on a match. Threshold is a number between 0 and 1 with 0 always finding a match and 1 never finding a match, so 0 is most strict
+function levenshteinTestSuiteVersusFile($password,$threshold,$file,$reverse,$leet){ //Returns array where first value is boolean and second value is description. Threshold is a number between 0 and 1 with 0 always finding a match and 1 never finding a match, so 0 is most strict
 	
-	levenshteinVersusFile($password, $threshold, $file);//vanilla test
+	if(levenshteinVersusFile($password, $threshold, $file)){
+		return array(true,'no changes');
+	}
+	//vanilla test
 	
 	if($reverse){
 		if(levenshteinVersusFile(strrev($password), $threshold, $file)){ //reversed test
-			return true;
+			return array(true,'reverse');
 		}
 	}
 	
 	if($leet){
 		if(levenshteinVersusFile(leetToNormalText($password), $threshold, $file)){ //reversed test
-			return true;
+			return array(true,'leet');
 		}
 	}
 	
 	if($reverse && $leet){
 		if(levenshteinVersusFile(leetToNormalText(strrev($password)), $threshold, $file)){ //reversed test
-			return true;
+			return array(true,'reverse and leet');
 		}
 	}
 
 	
-	return false;
+	return array(false, 'no issues');
 
 }
 
 function levenshteinTestSuiteVersusString($password,$threshold,$string,$reverse,$leet){ //Returns true on a match. Threshold is a number between 0 and 1 with 0 always finding a match and 1 never finding a match, so 0 is most strict
 	
-	levenshteinVersusString($password, $threshold, $string);//vanilla test
+	if(levenshteinVersusString($password, $threshold, $string)){
+		return array(true,'no changes');
+	}
 	
 	if($reverse){
 		if(levenshteinVersusString(strrev($password), $threshold, $string)){ //reversed test
-			return true;
+			return array(true,'reverse');
 		}
 	}
 	
 	if($leet){
 		if(levenshteinVersusString(leetToNormalText($password), $threshold, $string)){ //reversed test
-			return true;
+			return array(true,'leet');
 		}
 	}
 	
 	if($reverse && $leet){
 		if(levenshteinVersusString(leetToNormalText(strrev($password)), $threshold, $string)){ //reversed test
-			return true;
+			return array(true,'reverse and leet');
 		}
 	}
 
 	
-	return false;
+	return array(false, 'no issues');
 
 }
 
@@ -140,6 +145,5 @@ function hasConsecutiveCharacters($patternLength, $password){ //Tests if it cont
 	return false;
 	
 }
-
 
 ?>
