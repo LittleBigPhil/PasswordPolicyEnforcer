@@ -51,9 +51,17 @@ class HTMLDocument {
 
 
 class Component {
-    public $getInfo = function(){return Null;};
-    public $presenter = function($info, $components){};
-    public $components = [];
+    public $getInfo;
+    public $presenter;
+    public $components;
+    public $enabled;
+
+    public function __construct() {
+        $this->getInfo = function(){ return Null; };
+        $this->presenter = function($info, $components){};
+        $this->components = [];
+        $this->enabled = true;
+    }
 
     public function present() {
         if ($this->enabled) {
@@ -62,42 +70,48 @@ class Component {
         } 
     }
 
-    public $enabled = true;
-
-
+    public static function fillerComponent() {
+        $comp = new Component;
+        $comp->enabled = false;
+        return $comp;
+    }
     public static function rootComponent($html, $session, $database) {
         $comp = new Component;
 
         $comp->getInfo = InfoGetters::emptyGetter;
         $comp->presenter = Presenters::presentAll;
+
         // ToDo
-        // Add the pages
+        // Add the pages with actual components
         $comp->components = [
-            "loginPage" => null
-            "landingPage" => null
-            "adminPage" => null
-            "changePasswordPage" => null
+            "loginPage" => Presenter::htmlTitledPresenter($html, Presenter::loginFormPresenter, "Login"),
+            "landingPage" => fillerComponent(),
+            "adminPage" => fillerComponent(),
+            "changePasswordPage" => fillerComponent()
         ];
 
-        $enablePage function ($name) use ($comp->components) {
-            array_map($comp->components, function ($comp) { $comp->enable = false; });
+        $enablePage = function ($name) use ($comp) {
+            array_map($comp->components, function ($innerComp) { $innerComp->enabled = false; });
             $comp->components[$name]->enabled = true;
-        }
+        };
 
-        // ToDo
-        // Handle the events;
         $eventHandlers = [
             "loginSubmit" => function () use ($database, $session, $enablePage) {
-                // check database on credentials
-                // update session variables for logged in
-                // update session variable for user type
-                // update session variables for expired password
+                // ToDo
+                // check database for credentials
+                // set session var for password expiration
 
 
                 $credentialsAreValid = false;
                 if ($credentialsAreValid) {
-
-                    // set session vars to logged in
+                    $session->setVar("isLoggedOn", true);
+                    $session->setVar("userName", $username);
+                    if ($isAdmin) {
+                        $session->setVar("isAdmin", true);
+                    }
+                    if ($passwordExpire) {
+                        $session->setVar("userName", true);
+                    }
                     $enablePage("landingPage");
                 } else {
                     $enablePage("loginPage");
@@ -107,38 +121,47 @@ class Component {
                 $session->resetAll();
             },
             "goToChangePassword" => function () use ($session, $enablePage) {
-
+                $enablePage("changePasswordPage");
             },
             "goToAdmin" => function () use ($session, $enablePage) {
-                
+                $maybeAdmin = $session->getVar("isAdmin");
+
+                $maybeAdmin->map(function ($isAdmin) use ($enablePage) {
+                    $enablePage("adminPage");                    
+                });
             },
             "changePassword" => function () use ($session, $enablePage) {
-                
+                // ToDo
+                // check if previous password was correct and concordant
+                // update if so
+                $enablePage("landingPage");
             },
             "updateAdminOptions" => function () use ($session, $enablePage) {
-
+                // ToDo
+                // Check if admin
+                // update ini accordingly
+                $enablePage("landingPage");
             },
             "goToLanding" => function () use ($session, $enablePage) {
-                
+                $enablePage("landingPage");
             }
         ];
+
         $maybeRootEvent = $session->getVar("rootEvent");
         $maybeRootEvent = $maybeRootEvent->map(function ($rootEvent) use ($eventHandlers) {
             return $eventHandlers[$rootEvent];
         });
-        $componentEnabler = $maybeRootEvent->ifOrElse(function () use ($eventHandlers) {
-            eventHandlers["goToLanding"];
-        });
-        $componentEnabler($comp->components);
+        $componentEnabler = $maybeRootEvent->ifOrElse(eventHandlers["goToLanding"]);
+        $componentEnabler();
 
         //these have higher precedence, and relies on some of above, so it goes last
-        $maybeLoggedIn = $session->getVar("isLoggedIn");
+        $maybeLoggedIn = $session->getVar("isLoggedOn");
         if ($maybeLoggedIn.isNothing()) {
             array_map($comp->components, function ($comp) { $comp->enable = false; });
             $comp->components["loginPage"]->enabled = true;
         }
 
-        $maybeExpired = $session->getVar("passwordExpired")
+        $maybeExpired = $session->getVar("passwordExpired");
         $maybeExpired->map(function ($passwordExpired) use ($comp) {
             array_map($comp->components, function ($comp) { $comp->enable = false; });
             $comp->components["changePasswordPage"]->enabled = true;
@@ -162,16 +185,22 @@ class Presenters {
         array_map($components, function ($comp) { $comp->present(); });
     }
     public static function htmlPresenter($html, $getTags) {
-        return function ($info, $components) {
+        return function ($info, $components) use ($html, $getTags) {
             $html->addBodyHTML($getTags($info, $components));      
-        }
+        };
+    }
+    public static function htmlTitledPresenter($html, $getTags, $title) {
+        return function ($info, $components) use ($html, $getTags, $title) {
+            $html->setTitle($title);
+            $html->addBodyHTML($getTags($info, $components));
+        };
     }
     public static function loginFormPresenter($info, $components) {
-        return "<form action="index.php" method="post">
+        return '<form action="index.php" method="post">
         User Name: <input type="text" name="username"><br>
         Password: <input type="password" name="pass"><br>
         <input type="submit" name="rootEvent" value="loginSubmit">
-        </form>"
+        </form>';
     }
 }
 

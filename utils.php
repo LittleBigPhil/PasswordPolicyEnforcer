@@ -53,16 +53,16 @@ class DatabaseConnection {
     
     public static function makeConnection($username, $password) {
         $servername = "localhost";
-        $port = "3306"
+        $port = "3306";
         $dbname = "mydb";
         $dsn = "mysql:host=$servername;dbname=$dbname;port=$port";
 
         $eConn = Either::tryFunc( function () use ($dsn, $username, $password) {
             $conn = new PDO($dsn, $username, $password);
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            return $conn
+            return $conn;
         });
-        return $eConn
+        return $eConn;
     }
 
 }
@@ -153,7 +153,7 @@ abstract class Either {
     public static function tryFunc($func) {
         try {
             return new Right($func());
-        } catch ($e) {
+        } catch (Exception $e) {
             return new Left($e);
         }
     }
@@ -221,7 +221,7 @@ class Right extends Either{
     public function rightMap($func) {
         return new Right($func($this->value));
     }
-    public function leftFlatten() {
+    public function rightFlatten() {
         return $value;
     }
     public function getLeft() {
@@ -278,7 +278,7 @@ class PolicyOptions {
     }
 
     private $mapping;
-    private __construct($mapping) {
+    private function __construct($mapping) {
         $this->mapping = $mapping;
     }
 }
