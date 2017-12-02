@@ -48,6 +48,7 @@ class Post {
 
 
 // Reverted back to the MySQLi interface, because PDO doesn't work for some reason
+// I think I know what the problem was, but I'd rather just leave it at this point
 class DatabaseConnection {
     
     public static function makeConnection($username, $password) {
@@ -82,6 +83,10 @@ class DatabaseConnection {
 
     public function insertID() {
         return $this->connection->insert_id();
+    }
+
+    public function error() {
+        return mysqli_error($this->connection);
     }
 }
 

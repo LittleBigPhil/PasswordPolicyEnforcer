@@ -107,13 +107,14 @@ class Component {
 
                 $maybeUsername = Post::getVar("username");
                 $maybePassword = Post::getVar("pass");
-                $maybeUsername->map(function ($username) use ($credentialsAreValid, $maybePassword, $database) {
-                    $maybePassword->map(function ($password) use ($username, $credentialsAreValid, $database) {
-                        $sql = "select * from users where username='$username'";
+                $maybeUsername->map(function ($username) use (&$credentialsAreValid, $maybePassword, $database) {
+                    $maybePassword->map(function ($password) use ($username, &$credentialsAreValid, $database) {
+                        $sql = "select * from users where username='" . $username . "'";
                         $result = $database->query($sql);
-                        if ($result->num_rows > 0) {
+                        if ($result && $result->num_rows > 0) {
                             $fetched = $result->fetch_assoc();
-                            if (password_verify($password, $fetched["passhash"])) {
+                            $passhash = $fetched["passhash"];
+                            if (password_verify($password, $passhash)) {
                                 $credentialsAreValid = true;
                                 if ($fetched["usertype"] == "admin") {
                                     $isAdmin = true;
@@ -125,8 +126,6 @@ class Component {
                     });
                     return null;
                 });
-
-                var_dump($credentialsAreValid);
 
                 if ($credentialsAreValid) {
                     $session->setVar("isLoggedOn", true);
