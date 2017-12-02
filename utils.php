@@ -88,6 +88,17 @@ class DatabaseConnection {
     public function error() {
         return mysqli_error($this->connection);
     }
+    public static function resultToArray($result) {
+        $toRet = [];
+        if ($result) {
+            while($result->num_rows > 0) {
+                $fetched = $result->fetch_assoc();
+                array_push($toRet, $fetched);
+            }
+            $result->close();
+        }
+        return $toRet;
+    }
 }
 
 

@@ -1,6 +1,7 @@
 <?php
 
 
+require_once("passwordTests.php");
 
 //Allows stateful editing of the HTML
 //Automatically echos on destruction
@@ -111,7 +112,7 @@ class Component {
                 $maybePassword = Post::getVar("pass");
                 $maybeUsername->map(function ($username) use (&$credentialsAreValid, &$isAdmin, $maybePassword, $database) {
                     $maybePassword->map(function ($password) use ($username, &$credentialsAreValid, &$isAdmin, $database) {
-                        $sql = "select * from users where username='" . $username . "'";
+                        $sql = "select * from users where username='" . $username . "';";
                         $result = $database->query($sql);
                         if ($result && $result->num_rows > 0) {
                             $fetched = $result->fetch_assoc();
@@ -157,9 +158,77 @@ class Component {
             },
             "changePassword" => function () use ($session, $database, $enablePage) {
                 // ToDo
-                // check if previous password was correct and concordant
-                // update if so
-                call_user_func($enablePage,"landingPage");
+                // check if previous password was correct and the new passwords match
+                // if so
+                    // Get an array of password history
+                    // check if the new password is compatible
+                    // if it is
+                        // append the previous password to password history
+                        // update the current password to the new password
+                    // else
+                        // display error message
+                // else
+                    //display error message
+
+                $maybeUsername = $session->getVar("username");
+                $maybeOldPassword = Post::getVar("oldPassword");
+                $maybeNewPassword = Post::getVar("newPassword");
+                $maybeNewPasswordConfirm = Post::getVar("newPasswordConfirm");
+
+                $authenticated = false;
+                $userid = -1;
+                $maybeOldPassword->map(function ($password) use ($maybeUsername, $database, &$authenticated, &$userid) {
+                    $maybeUsername->map(function ($username) use ($password, $database, &$authenticated, &$userid) {
+                        $sql = "select * from users where username='" . $username . "';";
+                        $result = $database->query($sql);
+                        $resArr = DatabaseConnection::resultToArray($result);
+                        if (sizeof($resArr) > 0) {
+                            if (password_verify($password, $resArr[0]['passhash'])) {
+                                $authenticated = true;
+                                $userid = $resArr[0]['idusers'];
+                            }
+                        }
+                        return null;
+                    });
+                    return null;
+                });
+
+                $newPassword = "";
+                $maybeMatch = $maybeNewPassword->map(function ($pass1) use ($maybeNewPasswordConfirm, &$newPassword) {
+                    $newPassword = $pass1;
+                    if ($maybeNewPasswordConfirm->isNothing()) {
+                        return false;
+                    } else {
+                        $pass2 = $maybeNewPasswordConfirm->ifOrElse("");
+                        return $pass1 == $pass2;
+                    }
+                });
+
+                if ($authenticated && $maybeMatch) {
+                    $sql = "select * from passwordhistory;";
+                    $result = $database->query($sql);
+                    $results = DatabaseConnection::resultToArray($result);
+                    $justStrings = array_map(function ($fetched) {
+                        return $fetched['value'];
+                    }, $results);
+                    $tested = testWithOptions($newPassword, $justStrings);
+                    if ($tested[0]) {
+                        $sql = "insert into passwordhistory value values '" . $oldPassword . "';";
+                        $database->query($sql);
+
+                        $sql = "update passwordpolicy . users set passhash='" . $newPassword . "' where idusers='" . $userid . "';";
+                        $database->query($sql);
+                        call_user_func($enablePage, "landingPage");
+                    } else {
+                        // ToDo
+                        // Display error
+                        call_user_func($enablePage,"changePasswordPage");
+                    }
+                } else {
+                    // ToDo
+                    // Display error
+                    call_user_func($enablePage,"changePasswordPage");
+                }
             },
             "updateAdminOptions" => function () use ($session, $enablePage) {
                 // ToDo
