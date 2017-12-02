@@ -110,9 +110,10 @@ class Component {
 
                 $maybeUsername = Post::getVar("username");
                 $maybePassword = Post::getVar("pass");
-                $maybeUsername->map(function ($username) use (&$credentialsAreValid, &$isAdmin, $maybePassword, $database) {
-                    $maybePassword->map(function ($password) use ($username, &$credentialsAreValid, &$isAdmin, $database) {
-                        $sql = "select * from users where username='" . $username . "';";
+                $maybeUsername->map(function ($user) use (&$credentialsAreValid, &$isAdmin, $maybePassword, $database, &$username) {
+                    $username = $user;
+                    $maybePassword->map(function ($password) use ($user, &$credentialsAreValid, &$isAdmin, $database) {
+                        $sql = "select * from users where username='" . $user . "';";
                         $result = $database->query($sql);
                         if ($result && $result->num_rows > 0) {
                             $fetched = $result->fetch_assoc();
@@ -137,7 +138,7 @@ class Component {
                         $session->setVar("isAdmin", true);
                     }
                     if ($passwordExpire) {
-                        $session->setVar("username", true);
+                        $session->setVar("username", $username);
                     }
                     call_user_func($enablePage, "landingPage");
                 } else {
@@ -181,7 +182,9 @@ class Component {
                     $maybeUsername->map(function ($username) use ($password, $database, &$authenticated, &$userid) {
                         $sql = "select * from users where username='" . $username . "';";
                         $result = $database->query($sql);
+                        var_dump($username);
                         $resArr = DatabaseConnection::resultToArray($result);
+                        var_dump($resArr);
                         if (sizeof($resArr) > 0) {
                             if (password_verify($password, $resArr[0]['passhash'])) {
                                 $authenticated = true;
@@ -222,11 +225,13 @@ class Component {
                     } else {
                         // ToDo
                         // Display error
+                        var_dump($tested[1]);
                         call_user_func($enablePage,"changePasswordPage");
                     }
                 } else {
                     // ToDo
                     // Display error
+                    var_dump("other error");
                     call_user_func($enablePage,"changePasswordPage");
                 }
             },

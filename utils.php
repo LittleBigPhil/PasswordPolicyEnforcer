@@ -94,8 +94,8 @@ class DatabaseConnection {
             while($result->num_rows > 0) {
                 $fetched = $result->fetch_assoc();
                 array_push($toRet, $fetched);
+                $result->close();
             }
-            $result->close();
         }
         return $toRet;
     }
