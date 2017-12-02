@@ -47,24 +47,42 @@ class Post {
 }
 
 
-// Turns out the PDO class that was added as part of the standard does what I was using this class for
-// So I just turned this into a namespace
+// Reverted back to the MySQLi interface, because PDO doesn't work for some reason
 class DatabaseConnection {
     
     public static function makeConnection($username, $password) {
-        $servername = "localhost";
-        $port = "3306";
-        $dbname = "mydb";
-        $dsn = "mysql:host=$servername;dbname=$dbname;port=$port";
+        $servername = "localhost:3306";
+        $dbname = "passwordpolicy";
 
-        $eConn = Either::tryFunc( function () use ($dsn, $username, $password) {
-            $conn = new PDO($dsn, $username, $password);
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            return $conn;
-        });
-        return $eConn;
+        $conn = new mysqli($servername, $username, $password, $dbname);
+        if ($conn->connect_error) {
+            echo "Connection failed: " . $conn->connect_error;
+            return NULL;
+        }
+
+        return new DatabaseConnection($conn);
     }
 
+    private $connection;
+
+    private function __construct($connection) {
+        $this->connection = $connection;
+    }
+
+    public function __destruct() {
+        $this->connection->close();
+    }
+
+    public function query($sql) {
+        return $this->connection->query($sql);
+    }
+
+    // ToDo
+    // add prepared statement
+
+    public function insertID() {
+        return $this->connection->insert_id();
+    }
 }
 
 
@@ -113,7 +131,7 @@ class Just extends Maybe {
 }
 
 class Nothing {
-    public function ifOrElse($else_val) {
+    public function ifOrElse($else_value) {
         return $else_value;
     }
 

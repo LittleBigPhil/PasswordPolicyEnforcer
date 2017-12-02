@@ -85,7 +85,7 @@ class Component {
         // Add the pages with actual components
         $comp->components = [
             "loginPage" => self::loginComponent($html),
-            "landingPage" => self::fillerComponent(),
+            "landingPage" => self::landingComponent($html),
             "adminPage" => self::fillerComponent(),
             "changePasswordPage" => self::fillerComponent()
         ];
@@ -98,19 +98,44 @@ class Component {
         $eventHandlers = [
             "loginSubmit" => function () use ($database, $session, $enablePage) {
                 // ToDo
-                // check database for credentials
                 // set session var for password expiration
 
-
                 $credentialsAreValid = false;
+                $isAdmin = false;
+                $username = "";
+                $passwordExpire = false;
+
+                $maybeUsername = Post::getVar("username");
+                $maybePassword = Post::getVar("pass");
+                $maybeUsername->map(function ($username) use ($credentialsAreValid, $maybePassword, $database) {
+                    $maybePassword->map(function ($password) use ($username, $credentialsAreValid, $database) {
+                        $sql = "select * from users where username='$username'";
+                        $result = $database->query($sql);
+                        if ($result->num_rows > 0) {
+                            $fetched = $result->fetch_assoc();
+                            if (password_verify($password, $fetched["passhash"])) {
+                                $credentialsAreValid = true;
+                                if ($fetched["usertype"] == "admin") {
+                                    $isAdmin = true;
+                                }
+                            }
+                            $result->close();
+                        }
+                        return null;
+                    });
+                    return null;
+                });
+
+                var_dump($credentialsAreValid);
+
                 if ($credentialsAreValid) {
                     $session->setVar("isLoggedOn", true);
-                    $session->setVar("userName", $username);
+                    $session->setVar("username", $username);
                     if ($isAdmin) {
                         $session->setVar("isAdmin", true);
                     }
                     if ($passwordExpire) {
-                        $session->setVar("userName", true);
+                        $session->setVar("username", true);
                     }
                     call_user_func($enablePage, "landingPage");
                 } else {
@@ -147,7 +172,7 @@ class Component {
             }
         ];
 
-        $maybeRootEvent = $session->getVar("rootEvent");
+        $maybeRootEvent = Post::getVar("rootEvent");
         $maybeRootEvent = $maybeRootEvent->map(function ($rootEvent) use ($eventHandlers) {
             return $eventHandlers[$rootEvent];
         });
