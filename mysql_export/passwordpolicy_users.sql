@@ -27,6 +27,7 @@ CREATE TABLE `users` (
   `username` varchar(45) NOT NULL,
   `passhash` varchar(255) NOT NULL,
   `usertype` varchar(45) NOT NULL,
+  `timestamp` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (`idusers`),
   UNIQUE KEY `idusers_UNIQUE` (`idusers`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
@@ -38,7 +39,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'guest','$2y$10$u2cBxT34oxYpHGqOohBaJu8IvnB/GHQC/KypNS5wwTM4GR9BCD1sq','normal'),(2,'admin','$2y$10$wCmwKt0fVzznB9.zv7uUveYRxLoPuJ8KZVQeMi6vnZD/7CC69C2hC','admin');
+INSERT INTO `users` VALUES (1,'guest','$2y$10$u2cBxT34oxYpHGqOohBaJu8IvnB/GHQC/KypNS5wwTM4GR9BCD1sq','normal','2017-12-02 00:43:29.309120'),(2,'admin','$2y$10$wCmwKt0fVzznB9.zv7uUveYRxLoPuJ8KZVQeMi6vnZD/7CC69C2hC','admin','2017-12-02 00:43:29.309120');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-12-01 19:04:22
+-- Dump completed on 2017-12-01 19:46:16

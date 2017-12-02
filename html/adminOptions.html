@@ -1,23 +1,34 @@
 <html>
 <body>
 <form action="index.php" method="post">
-<select name="PasswordStore">
-  <option value="plain">Store passwords as plain text</option>
-  <option value="hash">Store passwords hashed</option>
-</select><br>
-Ban Dictionary words in passwords:<input type="checkbox" name="diction" value="Ban Dictionary words in passwords"><br>
-Ban Substitutions on Weak Passwords:<input type="checkbox" name="substitutions" value="Ban Substitutions on Weak Passwords"><br>
-Matching threshold(0.0-1.0): <input type="text" name="theshold"><br>
-Password Length requirement: <input type="text" name="passLength"><br>
-Passphrase Length requirement: <input type="text" name="phraseLength"><br>
-Require special characters:<input type="checkbox" name="special" value="Require special characters"><br>
-Require capitialized characters:<input type="checkbox" name="caps" value="Require capitialized characters"><br>
-Require Numbers:<input type="checkbox" name="number" value="Require numbers"><br>
-minimum password age: <input type="text" name="minage"><br>
-Maximum password age: <input type="text" name="maxage"><br>
-Ban consecutive characters:<input type="checkbox" name="consecutive" value="Ban consecutive characters"><br>
-Allowed length of consecutive characters: <input type="text" name="consecutiveLength"><br>
-<input type="submit">
+    <select name="hash_old_password">
+      <option value="false">Store passwords as plain text</option>
+      <option value="true">Store passwords hashed</option>
+    </select><br>
+    Ban Dictionary words in passwords: <input type="checkbox" name="exclude_dictionary" value="true"><br>
+    <input type="hidden" name="exclude_dictionary" value="false">
+    Ban Substitutions on Weak Passwords: <input type="checkbox" name="exclude_dictionary_substitutions" value="true"><br>
+    <input type="hidden" name="exclude_dictionary_substitutions" value="false">
+    Matching threshold(0.0-1.0): <input type="text" name="threshold"><br>
+    Require password length: <input type="checkbox" name="require_password_length" value="true"><br>
+    <input type="hidden" name="require_password_length" value="false">
+    Password Length requirement: <input type="text" name="password_minimum_length"><br>
+    Require passphrase length: <input type="checkbox" name="require_passphrase_length" value="true"><br>
+    <input type="hidden" name="require_passphrase_length" value="false">
+    Passphrase Length requirement: <input type="text" name="passphrase_minimum_length"><br>
+    Require special characters: <input type="checkbox" name="special" value="require_special"><br>
+    <input type="hidden" name="require_special" value="false">
+    Require capitialized characters: <input type="checkbox" name="caps" value="require_cap"><br>
+    <input type="hidden" name="require_cap" value="false">
+    Require Numbers: <input type="checkbox" name="number" value="require_number"><br>
+    <input type="hidden" name="require_number" value="false">
+    Minimum password age: <input type="text" name="password_minimum_age"><br>
+    Maximum password age: <input type="text" name="password_maximum_age"><br>
+    Ban consecutive characters: <input type="checkbox" name="consecutive" value="exclude_consecutive_characters"><br>
+    <input type="hidden" name="exclude_consecutive_characters" value="false">
+    Allowed length of consecutive characters: <input type="text" name="consecutive_characters"><br>
+    <button name="rootEvent" value="updateAdminOptions">Submit</button>
+    <button name="rootEvent" value="goToLanding">Cancel</button>
 </form>
 </body>
 </html>

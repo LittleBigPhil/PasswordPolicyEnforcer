@@ -95,10 +95,12 @@ class Component {
             $comp->components[$name]->enabled = true;
         };
 
+
         $eventHandlers = [
             "loginSubmit" => function () use ($database, $session, $enablePage) {
                 // ToDo
                 // set session var for password expiration
+                // remove the very easy sql injection attack
 
                 $credentialsAreValid = false;
                 $isAdmin = false;
@@ -241,7 +243,7 @@ class Presenter {
     }
     public static function landingFormPresenter() {
         // ToDo
-        // Disabled the admin options when user type isn't an admin
+        // Disabled the admin options button from appearing when user type isn't an admin
         return function($info, $components) {
             return '<form action="index.php" method="post">
               <button type="submit" name="rootEvent" value="goToChangePassword">Change your password</option>
@@ -250,6 +252,38 @@ class Presenter {
             </form>';
         };
     }
+    public static function adminFormPresenter() {
+    return function($info, $components) {
+        return '<form action="index.php" method="post">
+            <select name="hash_old_password">
+              <option value="false">Store passwords as plain text</option>
+              <option value="true">Store passwords hashed</option>
+            </select><br>
+            Ban Dictionary words in passwords: <input type="checkbox" name="exclude_dictionary" value="true"><br>
+            <input type="hidden" name="exclude_dictionary" value="false">
+            Ban Substitutions on Weak Passwords: <input type="checkbox" name="exclude_dictionary_substitutions" value="true"><br>
+            <input type="hidden" name="exclude_dictionary_substitutions" value="false">
+            Matching threshold(0.0-1.0): <input type="text" name="threshold"><br>
+            Require password length: <input type="checkbox" name="require_password_length" value="true"><br>
+            <input type="hidden" name="require_password_length" value="false">
+            Password Length requirement: <input type="text" name="password_minimum_length"><br>
+            Require passphrase length: <input type="checkbox" name="require_passphrase_length" value="true"><br>
+            <input type="hidden" name="require_passphrase_length" value="false">
+            Passphrase Length requirement: <input type="text" name="passphrase_minimum_length"><br>
+            Require special characters: <input type="checkbox" name="special" value="require_special"><br>
+            <input type="hidden" name="require_special" value="false">
+            Require capitialized characters: <input type="checkbox" name="caps" value="require_cap"><br>
+            <input type="hidden" name="require_cap" value="false">
+            Require Numbers: <input type="checkbox" name="number" value="require_number"><br>
+            <input type="hidden" name="require_number" value="false">
+            Minimum password age: <input type="text" name="password_minimum_age"><br>
+            Maximum password age: <input type="text" name="password_maximum_age"><br>
+            Ban consecutive characters: <input type="checkbox" name="consecutive" value="exclude_consecutive_characters"><br>
+            <input type="hidden" name="exclude_consecutive_characters" value="false">
+            Allowed length of consecutive characters: <input type="text" name="consecutive_characters"><br>
+            <button name="rootEvent" value="updateAdminOptions">Submit</button>
+            <button name="rootEvent" value="goToLanding">Cancel</button>
+        </form>';
 }
 
 
